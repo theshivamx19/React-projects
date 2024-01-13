@@ -1,3 +1,12 @@
+userId : nishanth@tala.aero
+password : Tala12345
+
+# Map code with marker : src/admin/pages/membersearchresult/membersearchresult.js
+
+
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
