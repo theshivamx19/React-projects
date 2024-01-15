@@ -42,6 +42,15 @@ const columns = [
     dataIndex: 'status',
   },
 ];
+var PI = 3.14;
+const convertLatLongToXY = (latitude, longitude, mapWidth, mapHeight) => {
+  // const x = (mapWidth * (180 + parseFloat(longitude)) / 413) + 82;
+  // const y = (mapHeight / 215) * (90 - parseFloat(latitude)) + 156
+  const x = ((longitude + 180) * (mapWidth / 346.82)) + 474;
+  const y = ((mapHeight / 2) - (mapWidth * Math.log(Math.tan((Math.PI / 4) + (latitude * Math.PI / 358.80))) / (2 * Math.PI))) + 72;
+  // Assuming a map height of 256 pixels
+  return { x, y };
+};
 
 // const markers = [
 //   {
@@ -66,10 +75,9 @@ const MemberSearchResult = () => {
     googleMapsApiKey: "AIzaSyBXg0NNnj9eZMfVwsBY0cKY4d42O485BtQ",
   });
   const [activeMarker, setActiveMarker] = useState(null);
-  const [tooltip, setTooltip] = useState(false);
   const handleActiveMarker = (marker) => {
     if (marker === activeMarker) {
-      setTooltip(true);
+      return;
     }
     setActiveMarker(marker);
   };
@@ -81,7 +89,7 @@ const MemberSearchResult = () => {
     companyBranches } = useSelector(state => state.member);
   const [companyData, setCompnayData] = useState([]);
   const navigate = useNavigate()
-  //companyBranches.data.map((item,key)=> alert(JSON.stringify(item)));
+  // companyBranches.data.map((item,key)=> console.log(JSON.stringify(item)));
   const [rowSeleted, setRowSelected] = useState(-1);
   useEffect(() => {
     if (rowSeleted >= 0) {
@@ -116,31 +124,43 @@ const MemberSearchResult = () => {
   const tooltipStyle = {
     backgroundColor: 'white'
   }
-  const [markers1, setMarkers] = useState();
+  const [markers1, setMarkers] = useState([]);
+  const [pinRegions, setPinRegion] = useState([]);
+  const [mapDimensions, setMapDimensions] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    const mapContainer = document.getElementById('map-2');
+    // const mapWidth = mapContainer.offsetWidth;
+    // const mapHeight = mapContainer.offsetHeight;
+    //alert(mapHeight+'='+mapWidth);
+    // setMapDimensions({ width: mapWidth, height: mapHeight });
+  }, []);
+  // console.log('companyBranches', companyBranches)
+
   useEffect(() => {
     let updatedMarkers = [];
-    let i = 1;
+    let regioncodes = [];
     if (typeof companyBranches.data !== 'undefined'
-      && companyBranches.data.length > 0) {
-      companyBranches.data.map((item, index) => {
+      && companyBranches.data.length > 0
+      && mapDimensions.width
+      && mapDimensions.height) {
+      companyBranches.data.map(item => {
         if (item.latitude
           && item.longitude) {
           // const { x, y } = convertLatLongToXY(item.latitude, item.longitude, mapDimensions.width, mapDimensions.height);
           updatedMarkers.push({
-            id: index,
-            name: <Link to={`/companyprofile/${item.company_id}`}><h5 style={{ color: 'black' }}> {item?.company_name}</h5>  <p style={{ color: 'black', fontWeight: 'bold', fontSize: '18px' }}><center>{item?.branch_name}</center></p> </Link>,
-            position: { lat: Number(item.latitude), lng: Number(item.longitude) },
-            // label: <div className="custom-marker-label"><Link to={`/companyprofile/${item.company_id}`}><h5 style={{ color: 'black' }}> {item?.company_name}</h5>  <p style={{ color: 'black', fontWeight: 'bold', fontSize: '18px' }}><center>{item?.branch_name}</center></p> </Link></div>,
+            lat : item.latitude, lng : item.longitude,
+            label: <div className="custom-marker-label"><Link to={`/companyprofile/${item.company_id}`}><h5 style={{ color: 'black' }}> {item?.company_name}</h5>  <p style={{ color: 'black', fontWeight: 'bold', fontSize: '18px' }}><center>{item?.branch_name}</center></p> </Link></div>,
+            // type: 'bullet',
+            fill: '#BBCE00',
           })
-          // regioncodes.push(item.region_code);
+          regioncodes.push(item.region_code);
         }
-        i++;
       });
     }
     // setPinRegion(regioncodes);
     setMarkers(updatedMarkers);
-  }, [markers1]);
-  //console.log(markers1)
+  }, [companyBranches]);
+  console.log('markers', markers1)
   //console.log('pinRegions', pinRegions)
   return (
     <div className="widget-content widget-content-area member-search-result">
@@ -216,35 +236,34 @@ const MemberSearchResult = () => {
         <div data-mdb-vector-map-init>
 
           <div className="container">
-            
+            <h1 className="text-center">React | Google Map Markers</h1>
             <div style={{ height: "90vh", width: "100%" }}>
               {isLoaded ? (
                 <GoogleMap
                   center={{ lat: 40.3947365, lng: 49.6898045 }}
                   zoom={3}
-                  //onMouseOver={() => setActiveMarker(null)}
+                  onClick={() => setActiveMarker(null)}
                   mapContainerStyle={{ width: "100%", height: "90vh" }}
                 >
-                  {typeof (companyBranches.data) !== 'undefined'
-                    && companyBranches.data.length > 0 && markers1 !== 'undefined' && markers1.map(({ id, name, position }) => (
-                      <MarkerF
-                        key={id}
-                        position={position}
-                        onMouseOver={() => handleActiveMarker(id)}
-                      // icon={{
-                      //   url:"https://t4.ftcdn.net/jpg/02/85/33/21/360_F_285332150_qyJdRevcRDaqVluZrUp8ee4H2KezU9CA.jpg",
-                      //   scaledSize: { width: 50, height: 50 }
-                      // }}
-                      >
-                        {activeMarker === id ? (
-                          <InfoWindowF onCloseClick={() => setActiveMarker(null)}>
-                            <div style={{ width:'250px',height:'100px',textAlign:'center', overflow:'hidden'}}>
-                                {name}
-                            </div>
-                          </InfoWindowF>
-                        ) : null}
-                      </MarkerF>
-                    ))}
+                  {markers1.map(({ id, name, position }) => (
+                    <MarkerF
+                      key={id}
+                      position={position}
+                      onClick={() => handleActiveMarker(id)}
+                    // icon={{
+                    //   url:"https://t4.ftcdn.net/jpg/02/85/33/21/360_F_285332150_qyJdRevcRDaqVluZrUp8ee4H2KezU9CA.jpg",
+                    //   scaledSize: { width: 50, height: 50 }
+                    // }}
+                    >
+                      {activeMarker === id ? (
+                        <InfoWindowF onCloseClick={() => setActiveMarker(null)}>
+                          <div>
+                            <p>{name}</p>
+                          </div>
+                        </InfoWindowF>
+                      ) : null}
+                    </MarkerF>
+                  ))}
                 </GoogleMap>
               ) : null}
             </div>
