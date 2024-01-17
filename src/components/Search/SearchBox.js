@@ -71,7 +71,7 @@ const SearchBox = ({ heading, type }) => {
           value: item,
           label: item,
         })
-      })  
+      })
     }
     setSearchContinent(region);
 
@@ -125,19 +125,42 @@ const SearchBox = ({ heading, type }) => {
     dispatch(setForSearchInit());
   }
 
+  const handleResetAllContinents = (name, value) => {
+    dispatch(setForSearch({ [name]: value }));
+  };
+
+  // const handleOnChange = (value, name) => {
+  //   if (typeof value !== 'undefined') {
+  //     dispatch(setForSearch({ [name]: value }));
+  //   } else {
+  //     dispatch(setForSearch({}));
+  //   }
+  //   if (typeof value !== 'undefined' && name === 'region') {
+  //     dispatch(companyListParms({ continent: value }));
+  //   }
+  //   if (typeof value === 'undefined' && name === 'region') {
+  //     dispatch(setInitialListParms());
+  //   }
+  // }
+
+
   const handleOnChange = (value, name) => {
-    if (typeof value !== 'undefined') {
+    if (typeof value !== 'undefined'&& value !== 'All Continents') {
       dispatch(setForSearch({ [name]: value }));
     } else {
       dispatch(setForSearch({}));
     }
     if (typeof value !== 'undefined' && name === 'region') {
       dispatch(companyListParms({ continent: value }));
+      if (value === 'All Continents' && name === 'region') {
+        handleResetAllContinents();
+      }
     }
     if (typeof value === 'undefined' && name === 'region') {
       dispatch(setInitialListParms());
     }
-  }
+  };
+
 
   useEffect(() => {
     if (Object.keys(forSearch).length > 0) {

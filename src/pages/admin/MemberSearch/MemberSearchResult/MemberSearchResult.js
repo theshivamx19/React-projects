@@ -137,9 +137,11 @@ const MemberSearchResult = () => {
         i++;
       });
     }
+  // console.log('Markers Data:', updatedMarkers)
+
     // setPinRegion(regioncodes);
     setMarkers(updatedMarkers);
-  }, [markers1]);
+  }, [companyBranches]);
   //console.log(markers1)
   //console.log('pinRegions', pinRegions)
   return (
@@ -221,7 +223,7 @@ const MemberSearchResult = () => {
               {isLoaded ? (
                 <GoogleMap
                   center={{ lat: 40.3947365, lng: 49.6898045 }}
-                  zoom={3}
+                  zoom={2}
                   //onMouseOver={() => setActiveMarker(null)}
                   mapContainerStyle={{ width: "100%", height: "90vh" }}
                 >
