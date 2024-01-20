@@ -1,6 +1,3 @@
-userId : nishanth@tala.aero
-password : Tala12345
-
 # Map code with marker : src/admin/pages/membersearchresult/membersearchresult.js
 
 

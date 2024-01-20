@@ -233,6 +233,7 @@ const MemberSearchResult = () => {
                         key={id}
                         position={position}
                         onMouseOver={() => handleActiveMarker(id)}
+                        onMouseOut={() => handleActiveMarker()}
                       // icon={{
                       //   url:"https://t4.ftcdn.net/jpg/02/85/33/21/360_F_285332150_qyJdRevcRDaqVluZrUp8ee4H2KezU9CA.jpg",
                       //   scaledSize: { width: 50, height: 50 }
