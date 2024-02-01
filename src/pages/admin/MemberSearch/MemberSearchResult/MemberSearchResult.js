@@ -65,6 +65,9 @@ const MemberSearchResult = () => {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: "AIzaSyBXg0NNnj9eZMfVwsBY0cKY4d42O485BtQ",
   });
+
+  // sir implement this useState for center😊
+  const [center, setCenter] = useState({ lat: 40.3947365, lng: 49.6898045 });
   const [activeMarker, setActiveMarker] = useState(null);
   const [tooltip, setTooltip] = useState(false);
   const handleActiveMarker = (marker) => {
@@ -75,6 +78,16 @@ const MemberSearchResult = () => {
   };
 
 
+
+  // sir implement this function for center😊
+const handleMapClick = (event) => {
+    // Update the center state based on the clicked position
+    setCenter({
+      lat: event.latLng.lat(),
+      lng: event.latLng.lng(),
+    });
+  };
+  
   const dispatch = useDispatch();
   const { isLoading,
     memberSearchResult,
@@ -222,7 +235,11 @@ const MemberSearchResult = () => {
             <div style={{ height: "90vh", width: "100%" }}>
               {isLoaded ? (
                 <GoogleMap
-                  center={{ lat: 40.3947365, lng: 49.6898045 }}
+                  // center={{ lat: 40.3947365, lng: 49.6898045 }}
+
+
+                  // sir implement this for center 😊
+                  center={center}
                   zoom={2}
                   //onMouseOver={() => setActiveMarker(null)}
                   mapContainerStyle={{ width: "100%", height: "90vh" }}
@@ -233,15 +250,17 @@ const MemberSearchResult = () => {
                         key={id}
                         position={position}
                         onMouseOver={() => handleActiveMarker(id)}
-                        onMouseOut={() => handleActiveMarker()}
-                      // icon={{
-                      //   url:"https://t4.ftcdn.net/jpg/02/85/33/21/360_F_285332150_qyJdRevcRDaqVluZrUp8ee4H2KezU9CA.jpg",
-                      //   scaledSize: { width: 50, height: 50 }
-                      // }}
+                        // onMouseOut={() => handleActiveMarker()}
+                      icon={{
+                        url:"https://icon-library.com/images/pin-icon-png/pin-icon-png-9.jpg",
+                        scaledSize: { width: 30, height: 30 }
+                      }}
+                      // https://static-00.iconduck.com/assets.00/map-marker-icon-1366x2048-7u371uwd.png
+                      
                       >
                         {activeMarker === id ? (
                           <InfoWindowF onCloseClick={() => setActiveMarker(null)}>
-                            <div style={{ width:'250px',height:'100px',textAlign:'center', overflow:'hidden'}}>
+                            <div style={{ width:'250px',height:'100px',textAlign:'center', overflow:'hidden', backgroundColor : "green"}}>
                                 {name}
                             </div>
                           </InfoWindowF>

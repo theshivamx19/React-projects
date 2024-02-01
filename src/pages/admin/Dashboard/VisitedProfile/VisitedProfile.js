@@ -1,68 +1,94 @@
 import React, { useEffect, useState } from 'react';
 import "assets/css/Dashboard/VisitedProfile.css";
 import BoldHeading from 'components/BoldHeading/BoldHeading';
-import { MDBVectorMap } from 'mdb-react-vector-maps';
-
-const convertLatLongToXY = (latitude, longitude, mapWidth, mapHeight) => {
-  const x = ((longitude + 180) * (mapWidth / 346.82))+474;
-  const y = ((mapHeight / 2) - (mapWidth * Math.log(Math.tan((Math.PI/4) + (latitude * Math.PI / 358.80))) / (2 * Math.PI)))+72;
-  return { x, y };
-};
-
+import {
+  GoogleMap,
+  InfoWindowF,
+  MarkerF,
+  useLoadScript,
+} from "@react-google-maps/api";
 const VisitedProfile = ({ visitedProfiles }) => {
   const [markers, setMarkers] = useState([]);
+  const [center, setCenter] = useState({ lat: 40.3947365, lng: 49.6898045 });
   const [mapDimensions, setMapDimensions] = useState({ width: 0, height: 0 });
-
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: "AIzaSyDUUQPcnJ2yyGf8cr14xOMJE7qIz3SLwvw",
+  });
+  const [activeMarker, setActiveMarker] = useState(null);
+  const [tooltip, setTooltip] = useState(false);
+  const handleActiveMarker = (marker) => {
+    if (marker === activeMarker) {
+      setTooltip(true);
+    }
+    setActiveMarker(marker);
+  };
+  const closeTooTip = () => {
+    setTooltip(false);
+    setActiveMarker(null);
+  }
+  const handleMapClick = (event) => {
+    // Update the center state based on the clicked position
+    setCenter({
+      lat: event.latLng.lat(),
+      lng: event.latLng.lng(),
+    });
+  };
   useEffect(() => {
-    const mapContainer = document.getElementById('map-1');
-    const mapWidth = mapContainer.offsetWidth;
-    const mapHeight = mapContainer.offsetHeight;
-    setMapDimensions({ width: mapWidth, height: mapHeight });
-  }, []);
-
-  useEffect(() => {
-    if (visitedProfiles && visitedProfiles.data && mapDimensions.width && mapDimensions.height) {
+    if (visitedProfiles && visitedProfiles.data) {
       const updatedMarkers = visitedProfiles.data
         .filter(item => item.latitude && item.longitude)
-        .map(item => {
-          const { x, y } = convertLatLongToXY(item.latitude, item.longitude, mapDimensions.width, mapDimensions.height);
+        .map((item,index) => {
           return {
-            x,
-            y,
-            label: `${item.first_name} ${item.last_name} - ${item.company_name}`,
-            // type: 'bullet',
-            fill: '#BBCE00',
+            id: index,
+            name:  `${item?.first_name} ${item?.last_name} - ${item?.company_name}`,
+            position: { lat: Number(item?.latitude), lng: Number(item?.longitude) },
           };
         });
 
       setMarkers(updatedMarkers);
     }
-  }, [visitedProfiles, mapDimensions]);
-
+  }, [visitedProfiles]);
   return (
     <div className="col-xl-8 col-lg-6 col-md-12 col-sm-12 col-12 layout-spacing" style={{ marginTop: "10px" }}>
       <div className="widget widget-chart-one" id="map-1">
         <BoldHeading
           Boldheading="Licensees who visited your profile"
         />
-        <div className="">
-          <div className="row mt-4">
-            <div className="col-lg-12 col-md-12 col-sm-12">
-              <div data-mdb-vector-map-init id="map-1" 
-              style={{backgroundColor : "#1b4d70",overflow:"hidden",position:'relative'}}
-              data-mdb-select-region="CA">
-                <MDBVectorMap
-                  map='world'
-                  markers={markers}
-                  containerStyle={{
-                    width: "100%",
-                    height: "520px"
-                  }}
-                  containerClassName="map"
-                />
-              </div>
+        <div className="col-lg-12 col-md-12 col-sm-12 mt-4">
+        <div data-mdb-vector-map-init>
+
+          <div className="container">
+            
+            <div style={{ height: "90vh", width: "100%" }}>
+              {isLoaded ? (
+                <GoogleMap
+               //   center={{ lat: 40.3947365, lng: 49.6898045 }}
+                  center={center}
+                  zoom={3}
+                  //onMouseOver={() => setActiveMarker(null)}
+                  mapContainerStyle={{ width: "100%", height: "90vh" }}
+                >
+                  {markers.map(({ id, name, position }) => (
+                      <MarkerF
+                        key={id}
+                        position={position}
+                        onMouseOver={() => handleActiveMarker(id)}
+                        onMouseOut={() => handleActiveMarker()}
+                      >
+                        {activeMarker === id ? (
+                          <InfoWindowF onCloseClick={() => setActiveMarker(null)}>
+                            <div style={{ width:'120px',height:'60px',textAlign:'center', overflow:'hidden',fontWeight:'bold'}} onMouseLeave={() => closeTooTip()}>
+                                {name}
+                            </div>
+                          </InfoWindowF>
+                        ) : null}
+                      </MarkerF>
+                    ))}
+                </GoogleMap>
+              ) : null}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
